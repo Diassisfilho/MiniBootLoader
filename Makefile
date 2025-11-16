@@ -11,10 +11,10 @@
 
 # --- Toolchain ---
 # We specify the .exe for Windows compatibility, though 'make' often handles it.
-AS      = nasm.exe
-CC      = i686-elf-gcc.exe
-LD      = i686-elf-ld.exe
-OBJCOPY = i686-elf-objcopy.exe
+AS      = nasm
+CC      = i686-elf-gcc
+LD      = i686-elf-ld
+OBJCOPY = i686-elf-objcopy
 
 # --- C Compiler Flags ---
 # -ffreestanding: Don't assume a standard library
@@ -25,7 +25,7 @@ CFLAGS = -ffreestanding -std=gnu99 -m32 -nostdlib -O2 -Wall -Wextra
 
 # --- Linker Flags ---
 # -T linker.ld: Use our custom linker script
-LDFLAGS = -T linker.ld -m elf_i386
+LDFLAGS = -T linker.ld
 
 # --- Files ---
 BOOT_BINS = boot.bin math_add.bin math_sub.bin c_loader.bin
@@ -79,7 +79,7 @@ $(KERNEL_BIN): $(KERNEL_ELF)
 # Link the C and ASM kernel objects
 $(KERNEL_ELF): $(KERNEL_OBJS) linker.ld
 	@echo "--- Linking Kernel ---"
-	$(CC) -o $(KERNEL_ELF) $(KERNEL_OBJS) $(LDFLAGS) -lgcc
+	$(CC) -o $(KERNEL_ELF) $(KERNEL_OBJS) $(LDFLAGS) $(CFLAGS) -lgcc
 
 # Compile C kernel code
 kernel.o: kernel.c

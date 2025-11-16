@@ -4,10 +4,9 @@
 start:
     cli             ; Disable interrupts
 
-    ; Load C kernel (kernel.bin) from sector 10 to 0x100000
-    ; Well load 16 sectors (8KB) for this example.
-    ; Real address 0x100000 = 0x10000:0x0000 (ES:BX)
-    mov ax, 0x10000
+    ; Load C kernel (kernel.bin) from sector 10 to 0x20000
+    ; Real address 0x20000 = 0x2000:0x0000 (ES:BX)
+    mov ax, 0x2000      ; <<< FIX 1: Set segment to 0x2000
     mov es, ax
     mov bx, 0x0000
     
@@ -61,10 +60,8 @@ gdt_start:
     dd 0x0
     dd 0x0
 
+gdt_code: ; <<< FIX 2: Added 'gdt_code' label
     ; Code Segment Descriptor (Ring 0)
-    ; base=0, limit=0xFFFFF, 4KB granularity
-    ; flags: 0x9A (Present, Ring 0, Code, Exec/Read)
-    ; gran: 0xCF (4KB Granularity, 32-bit)
     dw 0xFFFF       ; Limit (low)
     dw 0x0000       ; Base (low)
     db 0x00         ; Base (mid)
@@ -72,10 +69,8 @@ gdt_start:
     db 0xCF         ; Granularity
     db 0x00         ; Base (high)
 
+gdt_data: ; <<< FIX 2: Added 'gdt_data' label
     ; Data Segment Descriptor (Ring 0)
-    ; base=0, limit=0xFFFFF, 4KB granularity
-    ; flags: 0x92 (Present, Ring 0, Data, Read/Write)
-    ; gran: 0xCF (4KB Granularity, 32-bit)
     dw 0xFFFF       ; Limit (low)
     dw 0x0000       ; Base (low)
     db 0x00         ; Base (mid)
@@ -89,8 +84,8 @@ gdt_descriptor:
     dd gdt_start                ; GDT Base Address
 
 ; GDT Segment Selectors (offsets from GDT start)
-CODE_SEG equ gdt_start.code - gdt_start
-DATA_SEG equ gdt_start.data - gdt_start
+CODE_SEG equ gdt_code - gdt_start ; <<< FIX 3: Changed to use new labels
+DATA_SEG equ gdt_data - gdt_start ; <<< FIX 3: Changed to use new labels
 
 ; --- 32-bit Protected Mode Code ---
 [bits 32]
@@ -106,7 +101,7 @@ init_32:
     ; Set up a stack
     mov esp, 0x90000
 
-    ; Call the C kernel at 1MB!
-    call 0x100000
+    ; Call the C kernel at 0x20000!
+    call 0x20000        ; <<< FIX 4: Call new kernel address
 
     jmp $           ; Halt

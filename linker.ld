@@ -2,7 +2,8 @@
 ENTRY(main) /* Set the entry point to our C 'main' function */
 SECTIONS
 {
-    . = 0x100000; /* Set the load address to 1MB */
+    /* <<< FIX: Changed load address to 0x20000 to match c_loader.asm */
+    . = 0x20000; 
 
     .text :
     {
