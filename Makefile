@@ -47,13 +47,13 @@ $(FLOPPY_IMG): $(BOOT_BINS) $(KERNEL_BIN)
 	# Write bootloader (Sector 1)
 	dd if=boot.bin of=$(FLOPPY_IMG) conv=notrunc
 	# Write math_add (Sector 2)
-	dd if=math_add.bin of=$(FLOPPY_IMG) seek=2 conv=notrunc
+	dd if=math_add.bin of=$(FLOPPY_IMG) seek=1 conv=notrunc
 	# Write math_sub (Sector 3)
-	dd if=math_sub.bin of=$(FLOPPY_IMG) seek=3 conv=notrunc
+	dd if=math_sub.bin of=$(FLOPPY_IMG) seek=2 conv=notrunc
 	# Write c_loader (Sector 4)
-	dd if=c_loader.bin of=$(FLOPPY_IMG) seek=4 conv=notrunc
+	dd if=c_loader.bin of=$(FLOPPY_IMG) seek=3 conv=notrunc
 	# Write kernel (starting at Sector 10)
-	dd if=$(KERNEL_BIN) of=$(FLOPPY_IMG) seek=10 conv=notrunc
+	dd if=$(KERNEL_BIN) of=$(FLOPPY_IMG) seek=9 conv=notrunc
 	@echo "--- Done! ---"
 	@echo "Run with: qemu-system-i386 -fda $(FLOPPY_IMG)"
 
