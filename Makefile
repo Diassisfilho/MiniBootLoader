@@ -33,6 +33,7 @@ KERNEL_OBJS = kernel_asm.o kernel.o
 KERNEL_ELF = kernel.elf
 KERNEL_BIN = kernel.bin
 FLOPPY_IMG = floppy.img
+LOGO_IMG = logo.img
 
 # --- Build Rules ---
 
@@ -50,10 +51,10 @@ $(FLOPPY_IMG): $(BOOT_BINS) $(KERNEL_BIN)
 	dd if=math_add.bin of=$(FLOPPY_IMG) seek=1 conv=notrunc
 	# Write math_sub (Sector 3)
 	dd if=math_sub.bin of=$(FLOPPY_IMG) seek=2 conv=notrunc
-	# Write c_loader (Sector 4)
-	dd if=c_loader.bin of=$(FLOPPY_IMG) seek=3 conv=notrunc
-	# Write kernel (starting at Sector 10)
-	dd if=$(KERNEL_BIN) of=$(FLOPPY_IMG) seek=9 conv=notrunc
+	# Add image to sectors 5-12 (8 sectors)
+	dd if=$(LOGO_IMG) of=$(FLOPPY_IMG) seek=4 conv=notrunc
+	# Write kernel (starting at Sector 13)
+	dd if=$(KERNEL_BIN) of=$(FLOPPY_IMG) seek=12 conv=notrunc
 	@echo "--- Done! ---"
 	@echo "Run with: qemu-system-i386 -fda $(FLOPPY_IMG)"
 
