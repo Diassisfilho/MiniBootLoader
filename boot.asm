@@ -14,7 +14,7 @@ start:
 
     ; Display the menu
     mov si, menu_msg
-    call print_string
+    call print_menu
 
 get_key:
     ; Wait for a keypress
@@ -104,8 +104,60 @@ print_string:
 .done:
     ret
 
+; Function: print_menu
+; Writes a null-terminated string at the top-left of the screen
+; using VGA text buffer with attribute BG=blue, FG=white (0x1F)
+print_menu:
+    push ax
+    push bx
+    push cx
+    push dx
+    push si
+    push di
+    push es
+
+    mov ax, 0xB800
+    mov es, ax
+    xor di, di        ; start at top-left
+    xor cx, cx        ; char count
+
+.pm_loop:
+    lodsb
+    cmp al, 0
+    je .pm_done
+    cmp al, 0x0D
+    je .pm_newline
+    cmp al, 0x0A
+    je .pm_loop
+
+    mov [es:di], al
+    mov al, 0x1F
+    mov [es:di+1], al
+    add di, 2
+    inc cx
+    jmp .pm_loop
+
+.pm_newline:
+    mov ax, cx
+    shl ax, 1         ; ax = cx * 2
+    mov bx, 160
+    sub bx, ax        ; bx = 160 - cx*2
+    add di, bx
+    xor cx, cx
+    jmp .pm_loop
+
+.pm_done:
+    pop es
+    pop di
+    pop si
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+
 ; --- Data ---
-menu_msg:       db '--- My Bootloader Menu ---', 0x0D, 0x0A
+menu_msg:       db '--- Buti Loarder Menu ---', 0x0D, 0x0A
                 db '1. Run Addition Program', 0x0D, 0x0A
                 db '2. Run Subtraction Program', 0x0D, 0x0A
                 db '3. Run C Kernel', 0x0D, 0x0A
