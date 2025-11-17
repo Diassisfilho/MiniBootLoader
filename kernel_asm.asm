@@ -1,6 +1,14 @@
 [bits 32]
 
-global do_math  ; Make this function visible to the C linker
+extern main         ; Declare main as external (defined in kernel.c)
+global do_math      ; Make this function visible to the C linker
+global _start       ; Entry point for the kernel
+
+_start:
+    ; Entry point: call C main function
+    call main
+    ; If main returns, halt
+    jmp $
 
 do_math:
     ; --- Cdecl Stack Frame ---

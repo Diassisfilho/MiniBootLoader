@@ -52,11 +52,25 @@ load_math_sub:
     jmp 0x8000
 
 load_c_loader:
-    ; Load program from Sector 4
+    ; Load program from Sector 4 (16 sectors for c_loader)
     inc byte [sector_to_load] ; sector_to_load becomes 3
     inc byte [sector_to_load] ; sector_to_load becomes 4
-    call load_sector
+    call load_c_loader_sectors
     jmp 0x8000
+
+; Function: load_c_loader_sectors
+; Loads 16 sectors from Sector 4 into 0x0000:0x8000 (ES:BX)
+load_c_loader_sectors:
+    mov ah, 0x02        ; BIOS read sector
+    mov al, 16          ; Number of sectors to read
+    mov ch, 0           ; Cylinder 0
+    mov cl, [sector_to_load] ; Sector number (4)
+    mov dh, 0           ; Head 0
+    mov dl, 0x00        ; Drive 0 (A:)
+    mov bx, 0x8000      ; ES:BX buffer address (ES=0)
+    int 0x13
+    jc read_error       ; Jump if carry flag (error)
+    ret
 
 ; Function: load_sector
 ; Loads 1 sector from [sector_to_load] into 0x0000:0x8000 (ES:BX)
