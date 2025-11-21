@@ -210,36 +210,39 @@ print_string_gfx:
     cmp al, 0            ; Check if null terminator reached
     je .done             ; If yes, exit function
 
+    ; Save current string position (SI) for next character
+    push si              ; Save SI on stack for next iteration
+
     ; Calculate font data address for this character
     ; Font address = font_start + (ASCII value * 8)
     xor ah, ah           ; AH = 0 (clear upper byte of character code)
-    mov bl, 8            ; BL = bytes per character
-    mul bl               ; AX = ASCII * 8 (offset to character in font)
+    mov bx, 8            ; BX = bytes per character
+    mul bx               ; AX = ASCII * 8 (offset to character in font)
     
-    mov si, font_start   ; SI = start of font data
-    add si, ax           ; SI = address of this character's font data
+    add ax, font_start   ; AX = font_start + (ASCII * 8) = font data address
+    mov bx, ax           ; BX = font data address
     
     mov di, bp           ; DI = base offset for current character
 
     ; Draw all 8 rows of the character
     mov cx, 8            ; CX = 8 pixel rows per character
 .row_loop:
-    mov al, [ds:si]      ; Load one row of font bitmap (8 bits = 8 pixels)
-    inc si               ; Move to next row in font data
+    mov al, [ds:bx]      ; Load one row of font bitmap (8 bits = 8 pixels)
+    inc bx               ; Move to next row in font data
 
     ; Process 8 pixels in this row from left to right
-    mov bx, 8            ; BX = 8 pixels per row
+    mov ah, 8            ; AH = 8 pixels per row
 .pixel_loop_x:
     test al, 0x80        ; Test leftmost bit (bit 7)
     je .pixel_off        ; If bit is 0, draw black pixel
-    mov byte [es:di], 0x0F   ; Draw white pixel (0x0F)
+    mov byte [es:di], 0x00  ; Draw white pixel (0x0F)
     jmp .pixel_advance
 .pixel_off:
-    mov byte [es:di], 0x00   ; Draw black pixel (0x00)
+    mov byte [es:di], 0x0F   ; Draw black pixel (0x00)
 .pixel_advance:
     inc di               ; Move to next pixel horizontally
     shl al, 1            ; Shift character bitmap left (next bit to bit 7)
-    dec bx               ; Decrement pixel counter
+    dec ah               ; Decrement pixel counter
     jnz .pixel_loop_x    ; Repeat for all 8 pixels
 
     ; Move to next row
@@ -251,6 +254,8 @@ print_string_gfx:
     add ax, 8            ; Add 8 pixels (next character position)
     mov bp, ax           ; Update base offset
     
+    ; Restore string pointer for next character
+    pop si               ; Restore SI from stack
     jmp .char_loop       ; Process next character
 
 .done:
