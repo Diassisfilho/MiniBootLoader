@@ -33,6 +33,7 @@ KERNEL_OBJS = kernel_asm.o kernel.o
 KERNEL_ELF = kernel.elf
 KERNEL_BIN = kernel.bin
 FLOPPY_IMG = floppy.img
+LOGO_IMG = logo.img
 
 # --- Build Rules ---
 
@@ -45,6 +46,7 @@ $(FLOPPY_IMG): $(BOOT_BINS) $(KERNEL_BIN)
 	dd if=/dev/zero of=$(FLOPPY_IMG) bs=512 count=2880
 	dd if=boot.bin of=$(FLOPPY_IMG) conv=notrunc
 	dd if=stage2.bin of=$(FLOPPY_IMG) seek=1 conv=notrunc
+	dd if=$(LOGO_IMG) of=$(FLOPPY_IMG) seek=4 conv=notrunc
 	dd if=math_add.bin of=$(FLOPPY_IMG) seek=25 conv=notrunc
 	dd if=math_sub.bin of=$(FLOPPY_IMG) seek=26 conv=notrunc
 	dd if=c_loader.bin of=$(FLOPPY_IMG) seek=27 conv=notrunc

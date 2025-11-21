@@ -20,6 +20,9 @@ start:
     mov ax, 0x0013        ; AH=0 (set video mode), AL=0x13 (mode 13h)
     int 0x10              ; BIOS interrupt: set video mode
 
+    call load_logo_image  ; Carrega a imagem para 0x1000:0x0000
+    call draw_logo_image   ; Desenha a imagem na tela
+
     ; ==== Display Menu Title ====
     mov si, menu_msg      ; SI = pointer to menu title string
     mov dh, 0             ; DH = Y position (line 5)
@@ -261,6 +264,59 @@ print_string_gfx:
 .done:
     pop ds               ; Restore DS register
     popa                 ; Restore all general-purpose registers
+    ret
+
+load_logo_image:
+    ; Carrega 8 setores (logo.img) do setor 5 para 0x1000:0x0000
+    mov ax, 0x1000
+    mov es, ax
+    mov bx, 0x0000      ; Endereço do buffer (ES:BX)
+    
+    mov ah, 0x02        ; BIOS read sector
+    mov al, 8           ; Número de setores para ler (4096 / 512 = 8)
+    mov ch, 0           ; Cylinder 0
+    mov cl, 5           ; Setor inicial (1=boot, 2=math_add, 3=math_sub, 4=c_loader, 5=logo)
+    mov dh, 0           ; Head 0
+    mov dl, 0x00        ; Drive 0 (A:)
+    int 0x13
+    ret
+
+draw_logo_image:
+    ; Desenha uma imagem 64x64 no canto superior direito
+    ; A imagem está em 0x1000:0x0000
+    ; A memória de vídeo (Modo 13h) está em 0xA000:0x0000
+    
+    pusha
+    mov ax, 0xA000
+    mov es, ax          ; es = Segmento de vídeo
+    
+    ; --- MUDANÇA ESTÁ AQUI ---
+    ; Posição inicial: Y=0, X = (320 - 64) = 256
+    mov di, 256         ; di = Posição de destino (tela y=0, x=256)
+    ; --- FIM DA MUDANÇA ---
+
+    mov ax, 0x1000
+    mov ds, ax          ; ds = Segmento da imagem
+    xor si, si          ; si = Posição da fonte (imagem)
+    
+    mov cx, 64          ; Contador de linhas (Y)
+.y_loop:
+    push cx
+    mov cx, 64          ; Contador de colunas (X)
+.x_loop:
+    lodsb               ; Carrega byte [ds:si] para al, incrementa si
+    mov [es:di], al     ; Escreve byte em [es:di]
+    inc di              ; Próximo pixel na tela
+    loop .x_loop
+    
+    ; Pula para a próxima linha na tela (320 - 64)
+    ; Esta lógica permanece a mesma.
+    add di, (320 - 64) 
+    
+    pop cx
+    loop .y_loop
+    
+    popa
     ret
 
 ; ==============================================================================

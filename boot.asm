@@ -13,7 +13,7 @@ start:
     ; Carrega o Estágio 2 (stage2.bin)
     ; O Estágio 2 começa no Setor 2
     mov ah, 0x02        ; BIOS - ler setor
-    mov al, 16          ; Número de setores a ler (16 * 512 = 8KB)
+    mov al, 4           ; Número de setores a ler (4 * 512 = 2048)
     mov ch, 0           ; Cilindro 0
     mov cl, 2           ; Setor inicial (Setor 2)
     mov dh, 0           ; Cabeça 0
