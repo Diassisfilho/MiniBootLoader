@@ -28,12 +28,11 @@ CFLAGS = -ffreestanding -std=gnu99 -m32 -nostdlib -O2 -Wall -Wextra
 LDFLAGS = -T linker.ld
 
 # --- Files ---
-BOOT_BINS = boot.bin math_add.bin math_sub.bin c_loader.bin
+BOOT_BINS = boot.bin stage2.bin math_add.bin math_sub.bin c_loader.bin
 KERNEL_OBJS = kernel_asm.o kernel.o
 KERNEL_ELF = kernel.elf
 KERNEL_BIN = kernel.bin
 FLOPPY_IMG = floppy.img
-LOGO_IMG = logo.img
 
 # --- Build Rules ---
 
@@ -43,18 +42,13 @@ all: $(FLOPPY_IMG)
 # Rule to build the floppy image
 $(FLOPPY_IMG): $(BOOT_BINS) $(KERNEL_BIN)
 	@echo "--- Building Floppy Image ---"
-	# Create a 1.44MB empty floppy image
 	dd if=/dev/zero of=$(FLOPPY_IMG) bs=512 count=2880
-	# Write bootloader (Sector 1)
 	dd if=boot.bin of=$(FLOPPY_IMG) conv=notrunc
-	# Write math_add (Sector 2)
-	dd if=math_add.bin of=$(FLOPPY_IMG) seek=1 conv=notrunc
-	# Write math_sub (Sector 3)
-	dd if=math_sub.bin of=$(FLOPPY_IMG) seek=2 conv=notrunc
-	# Add image to sectors 5-12 (8 sectors)
-	dd if=$(LOGO_IMG) of=$(FLOPPY_IMG) seek=4 conv=notrunc
-	# Write kernel (starting at Sector 13)
-	dd if=$(KERNEL_BIN) of=$(FLOPPY_IMG) seek=12 conv=notrunc
+	dd if=stage2.bin of=$(FLOPPY_IMG) seek=1 conv=notrunc
+	dd if=math_add.bin of=$(FLOPPY_IMG) seek=25 conv=notrunc
+	dd if=math_sub.bin of=$(FLOPPY_IMG) seek=26 conv=notrunc
+	dd if=c_loader.bin of=$(FLOPPY_IMG) seek=27 conv=notrunc
+	dd if=$(KERNEL_BIN) of=$(FLOPPY_IMG) seek=43 conv=notrunc
 	@echo "--- Done! ---"
 	@echo "Run with: qemu-system-i386 -fda $(FLOPPY_IMG)"
 
@@ -70,6 +64,9 @@ math_sub.bin: math_sub.asm
 
 c_loader.bin: c_loader.asm
 	$(AS) -f bin c_loader.asm -o c_loader.bin
+
+stage2.bin: stage2.asm font.asm
+	$(AS) -f bin stage2.asm -o stage2.bin
 
 # --- 32-bit Kernel ---
 # Convert kernel from ELF to flat binary
