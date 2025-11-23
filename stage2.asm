@@ -84,7 +84,7 @@ get_key:
 load_math_add:
     mov ax, 0x0003       ; Set text mode (return to 80x25 text display)
     int 0x10             ; BIOS interrupt: set video mode
-    mov byte [sector_to_load], 8  ; Sector number where addition program is stored (seek=24 means sector 25)
+    mov byte [sector_to_load], 13  ; Sector number where addition program is stored
     mov byte [sector_count], 1     ; Load 1 sector
     call load_sectors    ; Load the program from disk
     jmp setup_and_run    ; Setup and run loaded program
@@ -94,7 +94,7 @@ load_math_add:
 load_math_sub:
     mov ax, 0x0003       ; Set text mode
     int 0x10             ; BIOS interrupt: set video mode
-    mov byte [sector_to_load], 9  ; Sector number where subtraction program is stored (seek=26 means sector 27)
+    mov byte [sector_to_load], 14  ; Sector number where subtraction program is stored
     mov byte [sector_count], 1     ; Load 1 sector
     call load_sectors    ; Load the program from disk
     jmp setup_and_run    ; Setup and run loaded program
@@ -104,7 +104,7 @@ load_math_sub:
 load_c_loader:
     mov ax, 0x0003       ; Set text mode
     int 0x10             ; BIOS interrupt: set video mode
-    mov byte [sector_to_load], 10  ; Sector number where C kernel starts (seek=27 means sector 28)
+    mov byte [sector_to_load], 15  ; Sector number where C kernel starts
     mov byte [sector_count], 1    ; Load 16 sectors for the C kernel
     call load_sectors    ; Load the program from disk
     jmp setup_and_run    ; Setup and run loaded program

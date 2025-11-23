@@ -12,7 +12,7 @@ start:
     mov ah, 0x02        ; BIOS read sector
     mov al, 2          ; Number of sectors
     mov ch, 0           ; Cylinder 0
-    mov cl, 12          ; Start at sector 10
+    mov cl, 16          ; Start at sector 16
     mov dh, 0           ; Head 0
     mov dl, 0x00        ; Drive 0
     int 0x13
