@@ -47,10 +47,10 @@ $(FLOPPY_IMG): $(BOOT_BINS) $(KERNEL_BIN)
 	dd if=boot.bin of=$(FLOPPY_IMG) conv=notrunc
 	dd if=stage2.bin of=$(FLOPPY_IMG) seek=1 conv=notrunc
 	dd if=$(LOGO_IMG) of=$(FLOPPY_IMG) seek=4 conv=notrunc
-	dd if=math_add.bin of=$(FLOPPY_IMG) seek=25 conv=notrunc
-	dd if=math_sub.bin of=$(FLOPPY_IMG) seek=26 conv=notrunc
-	dd if=c_loader.bin of=$(FLOPPY_IMG) seek=27 conv=notrunc
-	dd if=$(KERNEL_BIN) of=$(FLOPPY_IMG) seek=43 conv=notrunc
+	dd if=math_add.bin of=$(FLOPPY_IMG) seek=7 conv=notrunc
+	dd if=math_sub.bin of=$(FLOPPY_IMG) seek=8 conv=notrunc
+	dd if=c_loader.bin of=$(FLOPPY_IMG) seek=9 conv=notrunc
+	dd if=$(KERNEL_BIN) of=$(FLOPPY_IMG) seek=11 conv=notrunc
 	@echo "--- Done! ---"
 	@echo "Run with: qemu-system-i386 -fda $(FLOPPY_IMG)"
 

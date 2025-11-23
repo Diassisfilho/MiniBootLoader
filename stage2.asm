@@ -1,4 +1,4 @@
-[org 0x8000]          ; Origin: Code starts at memory address 0x8000
+[org 0x7000]          ; Origin: Code starts at memory address 0x8000
 [bits 16]             ; 16-bit real mode assembly
 
 ; ==============================================================================
@@ -80,34 +80,46 @@ get_key:
 ; ==============================================================================
 
 ; Load Addition Program (math_add.asm)
-; Located at sector 25, size: 1 sector
+; Located at sector 24 (seek=24 in Makefile), size: 1 sector
 load_math_add:
     mov ax, 0x0003       ; Set text mode (return to 80x25 text display)
     int 0x10             ; BIOS interrupt: set video mode
-    mov byte [sector_to_load], 25  ; Sector number where addition program is stored
+    mov byte [sector_to_load], 8  ; Sector number where addition program is stored (seek=24 means sector 25)
     mov byte [sector_count], 1     ; Load 1 sector
     call load_sectors    ; Load the program from disk
-    jmp 0x8000           ; Jump to loaded program execution
+    jmp setup_and_run    ; Setup and run loaded program
 
 ; Load Subtraction Program (math_sub.asm)
-; Located at sector 26, size: 1 sector
+; Located at sector 26 (seek=26 in Makefile), size: 1 sector
 load_math_sub:
     mov ax, 0x0003       ; Set text mode
     int 0x10             ; BIOS interrupt: set video mode
-    mov byte [sector_to_load], 26  ; Sector number where subtraction program is stored
+    mov byte [sector_to_load], 9  ; Sector number where subtraction program is stored (seek=26 means sector 27)
     mov byte [sector_count], 1     ; Load 1 sector
     call load_sectors    ; Load the program from disk
-    jmp 0x8000           ; Jump to loaded program execution
+    jmp setup_and_run    ; Setup and run loaded program
 
 ; Load C Kernel Loader (c_loader.asm)
-; Located at sector 27, size: 16 sectors
+; Located at sector 27 (seek=27 in Makefile), size: 16 sectors
 load_c_loader:
     mov ax, 0x0003       ; Set text mode
     int 0x10             ; BIOS interrupt: set video mode
-    mov byte [sector_to_load], 27  ; Sector number where C kernel starts
-    mov byte [sector_count], 16    ; Load 16 sectors for the C kernel
+    mov byte [sector_to_load], 10  ; Sector number where C kernel starts (seek=27 means sector 28)
+    mov byte [sector_count], 1    ; Load 16 sectors for the C kernel
     call load_sectors    ; Load the program from disk
-    jmp 0x8000           ; Jump to loaded program execution
+    jmp setup_and_run    ; Setup and run loaded program
+
+; ==============================================================================
+; SETUP AND RUN LOADED PROGRAM
+; ==============================================================================
+setup_and_run:
+    ; Set up the segments for the loaded program
+    mov ax, 0x0000       ; AX = segment 0x0000
+    mov ds, ax           ; DS = 0x0000
+    mov es, ax           ; ES = 0x0000
+    mov ss, ax           ; SS = 0x0000
+    mov sp, 0x7C00       ; SP = stack pointer (below bootloader)
+    jmp 0x0000:0x8000    ; Jump to program at 0x08000
 
 ; ==============================================================================
 ; DISK I/O ROUTINE - Load sectors from disk
@@ -117,13 +129,18 @@ load_c_loader:
 ; Uses variables: sector_to_load (sector number), sector_count (number of sectors)
 ; ==============================================================================
 load_sectors:
+    ; Set up segment and offset FIRST
+    mov ax, 0x0000       ; AX = segment 0x0000
+    mov es, ax           ; ES = 0x0000
+    mov bx, 0x8000       ; BX = offset 0x8000 (absolute address 0x08000)
+    
+    ; NOW set up the BIOS function parameters
     mov ah, 0x02         ; BIOS function: read disk sectors
     mov al, [sector_count]      ; AL = number of sectors to read
     mov ch, 0            ; CH = cylinder number (0)
     mov cl, [sector_to_load]    ; CL = starting sector number
     mov dh, 0            ; DH = head number (0 = first head)
     mov dl, 0x00         ; DL = drive number (0x00 = floppy drive A:)
-    mov bx, 0x8000       ; BX = destination address (where data will be loaded)
     int 0x13             ; BIOS interrupt: disk I/O
     jc disk_error        ; If carry flag set, disk error occurred
     ret

@@ -18,13 +18,13 @@ start:
     mov cl, 2           ; Setor inicial (Setor 2)
     mov dh, 0           ; Cabeça 0
     mov dl, 0x00        ; Drive 0 (A:)
-    mov bx, 0x8000      ; Endereço do buffer (ES:BX -> 0x0000:0x8000)
+    mov bx, 0x7000      ; Endereço do buffer (ES:BX -> 0x0000:0x8000)
     
     int 0x13
     jc load_error       ; Se falhar, congela
 
     ; Pula para o Estágio 2
-    jmp 0x8000
+    jmp 0x7000
 
 load_error:
     ; Se não conseguir carregar o stage2, não há o que fazer
