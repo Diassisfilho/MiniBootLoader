@@ -1,4 +1,3 @@
-
 [org 0x8000]
 [bits 16]
 
@@ -12,8 +11,6 @@ start:
     mov ds, ax           ; DS = 0 (Segmento de Dados)
     mov es, ax           ; ES = 0 (Segmento Extra)
     sti                  ; Habilita interrupções
-
-    
 
     ; --- Cálculo FPU: z = sin( (x * pi) / y ) ---
     finit               ; Inicializa FPU
@@ -34,12 +31,10 @@ start:
     fsin                ; ST(0) = sin(ângulo) (Deve ser ~0.5)
 
     ; 6. Armazena o resultado na memória e remove da pilha
-    fstp qword [f_z]    ; Resultado (0.5) armazenado em f_z (no endereço 0x7C21/0x7C25)
+    fstp qword [f_z]    ; Resultado (0.5) armazenado em f_z 
     fld qword [f_z]
     fimul word [scale]     ; f_z * 100
     fistp word [tmp_int]   ; AX recebe inteiro
-
-    
 
     ; --- Saída de Verificação (usando BIOS INT 10h) ---
     mov si, result_msg  ; SI aponta para a string da mensagem
@@ -88,13 +83,23 @@ start:
 
     call print_nl
 
+    ; ==========================================================
+    ; Aguardar 5 segundos e retornar ao Menu
+    ; ==========================================================
+    
+    ; 1. Função BIOS Wait (INT 15h, AH=86h)
+    ; Entrada: CX:DX = intervalo em microsegundos
+    ; 5 segundos = 5.000.000 us = 0x004C4B40 hex
+    mov cx, 0x004C      ; Parte alta
+    mov dx, 0x4B40      ; Parte baixa
+    mov ah, 0x86        ; Função Wait
+    int 0x15
 
-    ; --- Parar Sistema ---
-    cli
-    hlt                 ; Para a execução para evitar que o QEMU trave
+    ; 2. Saltar de volta para o Stage 2 (Menu)
+    ; O Stage 2 está carregado em 0x7000
+    jmp 0x0000:0x7000   
 
-
-; --- Sub-rotina para imprimir uma string terminada em null (INT 10h Teletype) ---
+; --- Sub-rotinas (mantidas iguais) ---
 print_string:
     pusha
 .loop:
@@ -117,7 +122,6 @@ print_int:
     pusha
     cmp ax, 0
     jge .skip_sign
-    ; imprimir sinal
     mov al, '-'
     mov ah, 0x0E
     int 0x10

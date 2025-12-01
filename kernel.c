@@ -11,6 +11,24 @@ void print(char* str) {
 // Declare the external assembly function
 extern int do_math(int a, int b);
 
+// Simple delay function (Busy wait)
+// Since we are in 32-bit mode without interrupts/PIT configured in this simple kernel,
+// we burn CPU cycles. The count depends on CPU speed (QEMU/Real HW).
+void delay_approx_5s() {
+    // Volatile to prevent compiler optimization
+    volatile unsigned long long count = 0;
+    // Adjust this value if too fast/slow. ~100-500 million might be needed.
+    while (count < 400000000) {
+        count++;
+    }
+}
+
+// Function to reboot the computer using the keyboard controller
+void reboot() {
+    // Send 0xFE to port 0x64 (CPU Reset)
+    __asm__ __volatile__ ("outb %%al, %%dx" : : "a" (0xFE), "d" (0x64));
+}
+
 // The main entry point for our C kernel
 void main() {
     print("Hello from 32-bit C Kernel!");
@@ -25,6 +43,14 @@ void main() {
     } else {
         print("... ASM call failed!");
     }
+
+    // ==========================================================
+    // MODIFICAÇÃO: Aguardar 5 segundos e Reiniciar
+    // ==========================================================
+    
+    delay_approx_5s();
+    
+    reboot();
 
     // Halt
     while(1);

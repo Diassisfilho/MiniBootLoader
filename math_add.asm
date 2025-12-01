@@ -111,7 +111,23 @@ start:
     int 0x10
 
 .done:
-    jmp $
+    ; ==========================================================
+    ; MODIFICAÇÃO: Aguardar 5 segundos e retornar ao Menu
+    ; ==========================================================
+    
+    ; Pular uma linha antes
+    mov si, newline
+    call print_string
+
+    ; 1. Função BIOS Wait (INT 15h, AH=86h)
+    ; 5 segundos = 5.000.000 us = 0x004C4B40 hex
+    mov cx, 0x004C
+    mov dx, 0x4B40
+    mov ah, 0x86
+    int 0x15
+
+    ; 2. Retornar ao Menu (Stage 2 em 0x7000)
+    jmp 0x0000:0x7000
 
 ; ---------------------------------------------------------
 ; Funções
