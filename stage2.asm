@@ -67,7 +67,7 @@ get_key:
     
     ; Check if user pressed '2' (Subtraction)
     cmp al, '2'
-    je load_math_sub
+    je load_math_add
     
     ; Check if user pressed '3' (C Kernel)
     cmp al, '3'
@@ -91,7 +91,7 @@ load_math_sin:
 
 ; Load Subtraction Program (math_sub.asm)
 ; Located at sector 26 (seek=26 in Makefile), size: 1 sector
-load_math_sub:
+load_math_add:
     mov ax, 0x0003       ; Set text mode
     int 0x10             ; BIOS interrupt: set video mode
     mov byte [sector_to_load], 14  ; Sector number where subtraction program is stored
@@ -346,8 +346,8 @@ sector_count: db 0     ; Stores the count of sectors to load
 
 ; Menu strings displayed in graphics mode
 menu_msg:    db 'Menu Grafico', 0        ; Main menu title
-menu_opt1:   db '1. Seno', 0           ; Option 1: Addition program
-menu_opt2:   db '2. Subtracao', 0        ; Option 2: Subtraction program
+menu_opt1:   db '1. Seno', 0             ; Option 1: Addition program
+menu_opt2:   db '2. Adicao', 0              ; Option 2: Subtraction program
 menu_opt3:   db '3. Kernel C', 0         ; Option 3: C Kernel program
 menu_prompt: db '> ', 0                  ; User input prompt
 error_msg:   db 'Erro de Disco!', 0x0D, 0x0A, 0  ; Disk error message

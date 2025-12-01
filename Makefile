@@ -28,7 +28,7 @@ CFLAGS = -ffreestanding -std=gnu99 -m32 -nostdlib -O2 -Wall -Wextra
 LDFLAGS = -T linker.ld
 
 # --- Files ---
-BOOT_BINS = boot.bin stage2.bin math_sin.bin math_sub.bin c_loader.bin
+BOOT_BINS = boot.bin stage2.bin math_sin.bin math_add.bin c_loader.bin
 KERNEL_OBJS = kernel_asm.o kernel.o
 KERNEL_ELF = kernel.elf
 KERNEL_BIN = kernel.bin
@@ -48,7 +48,7 @@ $(FLOPPY_IMG): $(BOOT_BINS) $(KERNEL_BIN)
 	dd if=stage2.bin of=$(FLOPPY_IMG) seek=1 conv=notrunc
 	dd if=$(LOGO_IMG) of=$(FLOPPY_IMG) seek=4 conv=notrunc
 	dd if=math_sin.bin of=$(FLOPPY_IMG) seek=12 conv=notrunc
-	dd if=math_sub.bin of=$(FLOPPY_IMG) seek=13 conv=notrunc
+	dd if=math_add.bin of=$(FLOPPY_IMG) seek=13 conv=notrunc
 	dd if=c_loader.bin of=$(FLOPPY_IMG) seek=14 conv=notrunc
 	dd if=$(KERNEL_BIN) of=$(FLOPPY_IMG) seek=15 conv=notrunc
 	@echo "--- Done! ---"
@@ -61,8 +61,8 @@ boot.bin: boot.asm
 math_sin.bin: math_sin.asm
 	$(AS) -f bin math_sin.asm -o math_sin.bin
 
-math_sub.bin: math_sub.asm
-	$(AS) -f bin math_sub.asm -o math_sub.bin
+math_add.bin: math_add.asm
+	$(AS) -f bin math_add.asm -o math_add.bin
 
 c_loader.bin: c_loader.asm
 	$(AS) -f bin c_loader.asm -o c_loader.bin
